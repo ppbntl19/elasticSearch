@@ -1,10 +1,17 @@
 
-var mongoose = require('mongoose');
+var mongoose = require('mongoose'),
+  mongoosastic = require('mongoosastic');
 var Schema = mongoose.Schema;
+
 var db = mongoose.connect('mongodb://localhost/tuto');
-// set up a mongoose model and pass it using module.exports
-module.exports = mongoose.model('User', new Schema({
-    name: String,
+
+var UserSchema = new Schema({
+	 name: {type:String, es_indexed:true},
     password: String,
-    admin: Boolean
-}));
+    admin: Boolean,
+    about:String,
+    UID:String
+});
+
+UserSchema.plugin(mongoosastic)
+module.exports = mongoose.model('User', UserSchema);
