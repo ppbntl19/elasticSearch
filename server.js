@@ -1,20 +1,38 @@
 var express = require('express');
 var User = require('./user');
+var bodyParser = require('body-parser');
+var path = require('path');
 var app = express();
+app.use(bodyParser());
 
- app.listen(3000);
+app.set('port', process.env.PORT || 3000);
+app.set('views', path.join(__dirname, 'views'));
+app.set('view engine', 'ejs');
+app.use(express.static(path.join(__dirname, 'public')));
 
-app.get('/setup', function (req, res) {
+
+
+var elasticsearch = require('elasticsearch');
+var client = new elasticsearch.Client({
+  host: 'localhost:9200',
+  log: 'trace'
+});
+
+app.get('/', function (req, res) {
+    res.render('index',{})
+});
+
+app.post('/saveUser', function (req, res) {
     // create a sample user
-    var nick = new User({ // In this line throwing error Object is not a function.
-        name: 'Nick Cerminara',
-        password: 'password',
+    var user = new User({ // In this line throwing error Object is not a function.
+        name: req.body.name,
+        password: '123',
         admin: true,
-        about:"Hi I am developer,",
-        UID:"555111"
+        about:req.body.about,
+        UID:req.body.UID
     });
     // save the sample user
-    nick.save(function (err) {
+    user.save(function (err) {
         if (err) throw err;
         console.log('User saved successfully');
         res.json({
@@ -22,4 +40,27 @@ app.get('/setup', function (req, res) {
         });
     });
 });
+ 
+ app.post('/searchFor', function (req, res) {
+     client.search({
+      index: 'users',
+      type: 'user',
+      body: {
+        query: {
+          fuzzy: {
+             _all: req.body.keyword
+           
+          }
+        }
+      }
+}).then(function(response) {
+  var hits = response.hits.hits;
+  res.send(hits);
+}, function(error) {
+  console.trace(error.message);
+  res.send(404);
+});
+ });
+
+ app.listen(3000);
  console.log('server started 3000')

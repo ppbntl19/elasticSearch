@@ -9,6 +9,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "body-parser": "^1.12.4",
+    "ejs": "^2.3.1",
     "elasticsearch": "^4.1.0",
     "express": "*",
     "mongoosastic": "^3.1.2",
